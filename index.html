@@ -3,14 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ระบบนิเทศการพยาบาล กุมารเวชกรรมสาย 1 (ปีงบประมาณ 2569)</title>
+    <title>ระบบนิเทศการพยาบาล กุมารเวชกรรมสาย 1 (Firebase Edition)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
-    <!-- Chosen Palette: Clean Medical (Slate, Teal, Sky, Rose, Emerald for status) -->
-    <!-- Application Structure Plan: The SPA is designed as a management dashboard tailored for nursing supervisors. The structure groups information functionally to optimize the workflow: 1) 'Dashboard' for immediate executive insight (KPIs, trends, Resolution Rate), 2) 'Action/Form' based on the GROWS model and E-FIRES framework for daily data entry, 3) 'Standards/Plans' acting as a quick-reference interactive matrix for the 2569 Fiscal Year schedules, and 4) 'Reports/Personnel' for administrative tracking and Data Export. -->
-    <!-- Visualization & Content Choices: 1. E-FIRES Trends: Chart.js Line Chart (Goal: Change/Compare) to see which supervision categories are focused on over time. 2. Ward Activity: Chart.js Bar Chart (Goal: Compare) to view supervision volume across SCH-ICU2, SCH-ICU3, PCICU. 3. 2569 Plans: Interactive HTML Tables with JS Tabs (Goal: Organize) for easy cross-referencing. 4. GROWS Form: HTML Form with contextual patient data inputs (Goal: Inform/Record) standardizing data collection. Pure HTML/Tailwind/Canvas used. -->
+    <!-- นำเข้า Firebase Libraries (Version 8) -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
+    <!-- Chosen Palette: Clean Medical (Slate for structure, Teal for primary actions, Sky for info, Rose for pending/alerts, Emerald for success) -->
+    <!-- Application Structure Plan: Designed as a Single Page Application (SPA) focusing on the workflow of a Nursing Supervisor. The structure is non-linear, allowing users to jump between immediate insights (Dashboard), active data entry (GROWS Form), reference materials (Annual Plans), and historical tracking (Reports). A Login overlay ensures data security. The layout utilizes a collapsible sidebar for navigation and a main content area optimized for both desktop and tablet (ward rounds). -->
+    <!-- Visualization & Content Choices: 
+        1. E-FIRES Trends -> Chart.js Line Chart (Goal: Change/Compare over time) to monitor focus areas. 
+        2. Ward Activity -> Chart.js Bar Chart (Goal: Compare) to view supervision volume distribution across SCH-ICU2, SCH-ICU3, PCICU. 
+        3. 2569 Plans -> Interactive HTML Tables with JS Tabs (Goal: Organize) for quick access to guidelines without scrolling long documents. 
+        4. GROWS Form -> HTML Form (Goal: Inform/Record) standardizing data collection. 
+        NO SVG/Mermaid used; pure HTML/Tailwind/Canvas to meet requirements while ensuring responsive interaction. -->
     <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
 
     <style>
@@ -19,19 +28,18 @@
         .fade-in { animation: fadeIn 0.3s ease-in-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
         
+        /* Required Chart Container Styling */
         .chart-container { 
             position: relative; 
             width: 100%; 
             max-width: 1000px; 
             margin-left: auto; 
             margin-right: auto; 
-            height: 30vh; 
+            height: 35vh; 
             min-height: 250px;
-            max-height: 350px; 
+            max-height: 400px; 
         }
-        @media (min-width: 768px) { 
-            .chart-container { height: 350px; max-height: 400px; } 
-        }
+        @media (min-width: 768px) { .chart-container { height: 350px; } }
         canvas { width: 100% !important; height: 100% !important; }
         
         ::-webkit-scrollbar { width: 6px; height: 6px; }
@@ -39,23 +47,19 @@
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
         
+        /* Print Styles for the GROWS Form */
         @media print {
             @page { size: A4 portrait; margin: 1cm; }
             body, html { height: auto !important; overflow: visible !important; background-color: white !important; }
-            #sidebar, header, .print\:hidden { display: none !important; }
+            #sidebar, header, .print\:hidden, #login-screen { display: none !important; }
             #main-content { overflow: visible !important; height: auto !important; padding: 0 !important; margin: 0 !important; background-color: white !important; }
             .bg-slate-50, .bg-white, .bg-teal-50 { background-color: white !important; }
             .shadow-sm { box-shadow: none !important; border: 1px solid #e2e8f0 !important; }
             input, select, textarea { 
-                border: none !important; 
-                border-bottom: 1px dotted #94a3b8 !important; 
-                border-radius: 0 !important; 
-                background-color: transparent !important;
-                padding-left: 0 !important; padding-right: 0 !important;
-                box-shadow: none !important;
+                border: none !important; border-bottom: 1px dotted #94a3b8 !important; border-radius: 0 !important; 
+                background-color: transparent !important; padding-left: 0 !important; padding-right: 0 !important;
                 -webkit-appearance: none; appearance: none;
             }
-            select { background-image: none !important; }
             .view-section:not(.hidden) { display: block !important; }
         }
     </style>
@@ -71,7 +75,7 @@
                     <i class="fa-solid fa-user-nurse"></i>
                 </div>
                 <h2 class="text-white font-bold text-2xl relative z-10">ระบบนิเทศการพยาบาล</h2>
-                <p class="text-teal-100 text-sm mt-1 relative z-10">กุมารเวชกรรมสาย 1 (ปีงบประมาณ 2569)</p>
+                <p class="text-teal-100 text-sm mt-1 relative z-10">กุมารเวชกรรมสาย 1 (Firebase DB)</p>
             </div>
             <div class="p-8">
                 <form id="login-form" onsubmit="app.handleLogin(event)">
@@ -81,23 +85,19 @@
                     <div class="mb-5">
                         <label class="block text-sm font-medium text-slate-700 mb-1">ชื่อผู้ใช้งาน (Username)</label>
                         <div class="relative">
-                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <i class="fa-solid fa-user text-slate-400"></i>
-                            </div>
-                            <input type="text" id="login-username" required class="w-full border border-slate-300 rounded-lg pl-10 pr-4 py-2.5 outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 transition-all" placeholder="พิมพ์ admin">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><i class="fa-solid fa-user text-slate-400"></i></div>
+                            <input type="text" id="login-username" required class="w-full border border-slate-300 rounded-lg pl-10 pr-4 py-2.5 outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 transition-all" placeholder="admin">
                         </div>
                     </div>
                     <div class="mb-6">
                         <label class="block text-sm font-medium text-slate-700 mb-1">รหัสผ่าน (Password)</label>
                         <div class="relative">
-                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <i class="fa-solid fa-lock text-slate-400"></i>
-                            </div>
-                            <input type="password" id="login-password" required class="w-full border border-slate-300 rounded-lg pl-10 pr-4 py-2.5 outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 transition-all" placeholder="พิมพ์ admin">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><i class="fa-solid fa-lock text-slate-400"></i></div>
+                            <input type="password" id="login-password" required class="w-full border border-slate-300 rounded-lg pl-10 pr-4 py-2.5 outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 transition-all" placeholder="admin">
                         </div>
                     </div>
                     <button type="submit" class="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2 shadow-md">
-                        <i class="fa-solid fa-right-to-bracket"></i> เข้าสู่ระบบ (Login)
+                        <i class="fa-solid fa-right-to-bracket"></i> เข้าสู่ระบบ
                     </button>
                     <p class="text-center text-xs text-slate-400 mt-5 font-medium">Demo: Username = <span class="text-slate-600">admin</span> / Password = <span class="text-slate-600">admin</span></p>
                 </form>
@@ -105,87 +105,66 @@
         </div>
     </div>
 
-    <div id="sidebar" class="bg-slate-900 w-64 flex-shrink-0 flex flex-col transition-all duration-300 absolute md:relative z-20 h-full -translate-x-full md:translate-x-0">
+    <!-- SIDEBAR -->
+    <div id="sidebar" class="bg-slate-900 w-64 flex-shrink-0 flex flex-col transition-all duration-300 absolute md:relative z-20 h-full -translate-x-full md:translate-x-0 print:hidden">
         <div class="p-4 border-b border-slate-800 flex items-center justify-between">
             <div class="flex items-center gap-3">
-                <div class="w-10 h-10 bg-teal-500 rounded-lg flex items-center justify-center text-white text-xl shadow-lg">
-                    <i class="fa-solid fa-user-nurse"></i>
-                </div>
+                <div class="w-10 h-10 bg-teal-500 rounded-lg flex items-center justify-center text-white text-xl shadow-lg"><i class="fa-solid fa-user-nurse"></i></div>
                 <div>
                     <h1 class="text-white font-bold text-base leading-tight">ระบบนิเทศงาน</h1>
                     <p class="text-teal-400 text-[10px] uppercase tracking-wider">กุมารเวชกรรมสาย 1</p>
                 </div>
             </div>
-            <button onclick="app.toggleSidebar()" class="md:hidden text-slate-400 hover:text-white">
-                <i class="fa-solid fa-times text-xl"></i>
-            </button>
+            <button onclick="app.toggleSidebar()" class="md:hidden text-slate-400 hover:text-white"><i class="fa-solid fa-times text-xl"></i></button>
         </div>
 
         <div class="flex-1 overflow-y-auto py-4 px-3 space-y-1">
             <p class="px-3 text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-2 mt-2">ภาพรวมและวิเคราะห์</p>
-            <a href="#" onclick="app.navigate('dashboard')" class="nav-btn flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium hover:bg-slate-800 transition-colors text-white bg-slate-800" data-target="dashboard">
-                <i class="fa-solid fa-chart-pie w-5 text-center text-sky-400"></i> Dashboard สถิติ
-            </a>
-            <a href="#" onclick="app.navigate('reports')" class="nav-btn flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium hover:bg-slate-800 transition-colors text-slate-400" data-target="reports">
-                <i class="fa-solid fa-table-list w-5 text-center text-indigo-400"></i> รายงานข้อมูลนิเทศ
-            </a>
+            <a href="#" onclick="app.navigate('dashboard')" class="nav-btn flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium hover:bg-slate-800 transition-colors text-white bg-slate-800" data-target="dashboard"><i class="fa-solid fa-chart-pie w-5 text-center text-sky-400"></i> Dashboard สถิติ</a>
+            <a href="#" onclick="app.navigate('reports')" class="nav-btn flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium hover:bg-slate-800 transition-colors text-slate-400" data-target="reports"><i class="fa-solid fa-table-list w-5 text-center text-indigo-400"></i> รายงานข้อมูลนิเทศ</a>
 
             <p class="px-3 text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-2 mt-6">บันทึกและแผนงาน (ปี 2569)</p>
-            <a href="#" onclick="app.navigate('form')" class="nav-btn flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium hover:bg-slate-800 transition-colors text-slate-400" data-target="form">
-                <i class="fa-solid fa-clipboard-check w-5 text-center text-emerald-400"></i> บันทึกนิเทศ (GROWS)
-            </a>
-            <a href="#" onclick="app.navigate('plan')" class="nav-btn flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium hover:bg-slate-800 transition-colors text-slate-400" data-target="plan">
-                <i class="fa-regular fa-calendar-days w-5 text-center text-amber-400"></i> แผนการนิเทศงานประจำปี
-            </a>
+            <a href="#" onclick="app.navigate('form')" class="nav-btn flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium hover:bg-slate-800 transition-colors text-slate-400" data-target="form"><i class="fa-solid fa-clipboard-check w-5 text-center text-emerald-400"></i> บันทึกนิเทศ (GROWS)</a>
+            <a href="#" onclick="app.navigate('plan')" class="nav-btn flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium hover:bg-slate-800 transition-colors text-slate-400" data-target="plan"><i class="fa-regular fa-calendar-days w-5 text-center text-amber-400"></i> แผนการนิเทศงานประจำปี</a>
 
             <p class="px-3 text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-2 mt-6">ตั้งค่าระบบ</p>
-            <a href="#" onclick="app.navigate('personnel')" class="nav-btn flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium hover:bg-slate-800 transition-colors text-slate-400" data-target="personnel">
-                <i class="fa-solid fa-users-gear w-5 text-center text-rose-400"></i> จัดการรายชื่อบุคลากร
-            </a>
+            <a href="#" onclick="app.navigate('personnel')" class="nav-btn flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium hover:bg-slate-800 transition-colors text-slate-400" data-target="personnel"><i class="fa-solid fa-users-gear w-5 text-center text-rose-400"></i> จัดการรายชื่อบุคลากร</a>
         </div>
         
-        <div class="p-4 border-t border-slate-800 text-xs text-slate-500 text-center">
-            ปีงบประมาณ 2569<br>Version 2.5 (Executive SPA)
-        </div>
+        <div class="p-4 border-t border-slate-800 text-xs text-slate-500 text-center">ปีงบประมาณ 2569<br>Firebase Real-time ⚡</div>
     </div>
 
+    <!-- MAIN CONTENT AREA -->
     <div class="flex-1 flex flex-col overflow-hidden relative">
-        <header class="bg-white border-b border-slate-200 h-16 flex items-center justify-between px-4 lg:px-8 z-10 shrink-0">
+        <header class="bg-white border-b border-slate-200 h-16 flex items-center justify-between px-4 lg:px-8 z-10 shrink-0 print:hidden">
             <div class="flex items-center gap-4">
-                <button onclick="app.toggleSidebar()" class="md:hidden text-slate-500 hover:text-slate-800">
-                    <i class="fa-solid fa-bars text-xl"></i>
-                </button>
+                <button onclick="app.toggleSidebar()" class="md:hidden text-slate-500 hover:text-slate-800"><i class="fa-solid fa-bars text-xl"></i></button>
                 <h2 id="page-title" class="text-lg font-bold text-slate-800">Dashboard ภาพรวม</h2>
             </div>
             <div class="flex items-center gap-3">
                 <div class="text-right hidden sm:block">
                     <p class="text-sm font-bold text-slate-700">ผู้บริหาร / หัวหน้างาน</p>
-                    <p class="text-[10px] text-teal-600">สิทธิ์: Executive Admin</p>
+                    <p class="text-[10px] text-teal-600"><i class="fa-solid fa-wifi"></i> เชื่อมต่อ Firebase แล้ว</p>
                 </div>
-                <div class="w-9 h-9 rounded-full bg-slate-200 flex items-center justify-center text-slate-500">
-                    <i class="fa-solid fa-user-tie"></i>
-                </div>
-                <!-- ปุ่มออกจากระบบ (Logout) -->
-                <button onclick="app.logout()" class="ml-2 w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition-colors" title="ออกจากระบบ">
-                    <i class="fa-solid fa-right-from-bracket"></i>
-                </button>
+                <div class="w-9 h-9 rounded-full bg-slate-200 flex items-center justify-center text-slate-500"><i class="fa-solid fa-user-tie"></i></div>
+                <button onclick="app.logout()" class="ml-2 w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition-colors" title="ออกจากระบบ"><i class="fa-solid fa-right-from-bracket"></i></button>
             </div>
         </header>
 
         <main class="flex-1 overflow-y-auto p-4 lg:p-8 bg-slate-50 w-full" id="main-content">
             
+            <!-- DASHBOARD SECTION -->
             <div id="view-dashboard" class="view-section fade-in">
                 <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-                    <p class="text-slate-500">สรุปข้อมูลเชิงลึก การนิเทศการพยาบาล กุมารเวชกรรมสาย 1</p>
-                    
+                    <div>
+                        <h3 class="font-bold text-slate-700 text-base">สรุปข้อมูลเชิงลึก (Executive Insights)</h3>
+                        <p class="text-slate-500 text-xs mt-1">ส่วนนี้แสดงผลรวมของตัวชี้วัดสำคัญและการติดตามปัญหาจากการนิเทศ ช่วยให้ผู้บริหารวิเคราะห์แนวโน้มได้อย่างรวดเร็ว</p>
+                    </div>
                     <div class="flex gap-2 bg-white p-2 rounded-lg shadow-sm border border-slate-200">
                         <div class="flex items-center gap-2 px-2">
                             <i class="fa-solid fa-filter text-slate-400 text-xs"></i>
                             <select id="dash-ward-filter" class="text-xs border-none bg-transparent outline-none font-bold text-slate-700" onchange="app.renderDashboard()">
-                                <option value="all">ทุกหอผู้ป่วยรวมกัน</option>
-                                <option value="SCH-ICU2">เฉพาะ SCH-ICU2</option>
-                                <option value="SCH-ICU3">เฉพาะ SCH-ICU3</option>
-                                <option value="PCICU">เฉพาะ PCICU</option>
+                                <option value="all">ทุกหอผู้ป่วยรวมกัน</option><option value="SCH-ICU2">เฉพาะ SCH-ICU2</option><option value="SCH-ICU3">เฉพาะ SCH-ICU3</option><option value="PCICU">เฉพาะ PCICU</option>
                             </select>
                         </div>
                     </div>
@@ -198,21 +177,18 @@
                         <h3 class="text-3xl font-bold text-slate-800" id="kpi-total">0</h3>
                         <p class="text-[10px] text-slate-400 mt-1">ครั้ง (ตามเงื่อนไขที่เลือก)</p>
                     </div>
-                    
                     <div class="bg-white rounded-xl p-5 shadow-sm border border-slate-200 border-l-4 border-l-emerald-500 relative overflow-hidden">
                         <i class="fa-solid fa-chart-pie absolute -right-4 -bottom-4 text-7xl text-slate-50 opacity-50"></i>
-                        <p class="text-xs font-medium text-slate-500 mb-1">อัตราการแก้ไขปัญหาสำเร็จ (Resolution Rate)</p>
+                        <p class="text-xs font-medium text-slate-500 mb-1">อัตราการแก้ไขปัญหาสำเร็จ</p>
                         <h3 class="text-3xl font-bold text-emerald-600" id="kpi-rate">0%</h3>
-                        <p class="text-[10px] text-emerald-500 mt-1 font-medium"><span id="kpi-done">0</span> เรื่องที่แก้ไขแล้วเสร็จ (Done)</p>
+                        <p class="text-[10px] text-emerald-500 mt-1 font-medium"><span id="kpi-done">0</span> เรื่องที่แก้ไขแล้วเสร็จ</p>
                     </div>
-                    
                     <div class="bg-white rounded-xl p-5 shadow-sm border border-slate-200 border-l-4 border-l-rose-500 relative overflow-hidden">
                         <i class="fa-solid fa-clock-rotate-left absolute -right-4 -bottom-4 text-7xl text-slate-50 opacity-50"></i>
                         <p class="text-xs font-medium text-slate-500 mb-1">รอติดตามผล (Pending)</p>
                         <h3 class="text-3xl font-bold text-rose-600" id="kpi-pending">0</h3>
-                        <p class="text-[10px] text-rose-400 mt-1"><i class="fa-solid fa-circle-exclamation"></i> ต้องการการติดตามต่อเนื่อง</p>
+                        <p class="text-[10px] text-rose-400 mt-1">ต้องการการติดตามต่อเนื่อง</p>
                     </div>
-                    
                     <div class="bg-white rounded-xl p-5 shadow-sm border border-slate-200 border-l-4 border-l-amber-500 relative overflow-hidden">
                         <i class="fa-solid fa-fire absolute -right-4 -bottom-4 text-7xl text-slate-50 opacity-50"></i>
                         <p class="text-xs font-medium text-slate-500 mb-1">หมวดหมู่ปัญหาที่พบบ่อยสุด</p>
@@ -226,164 +202,113 @@
                         <div class="flex justify-between items-center mb-4">
                             <h3 class="font-bold text-slate-800"><i class="fa-solid fa-chart-line text-sky-500 mr-2"></i> แนวโน้มการนิเทศแยกตาม E-FIRES</h3>
                         </div>
-                        <div class="chart-container">
-                            <canvas id="chart-trend"></canvas>
-                        </div>
+                        <div class="chart-container"><canvas id="chart-trend"></canvas></div>
                     </div>
-                    
                     <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
                         <div class="flex justify-between items-center mb-4">
                             <h3 class="font-bold text-slate-800"><i class="fa-solid fa-chart-bar text-teal-500 mr-2"></i> สัดส่วนการนิเทศรายหอผู้ป่วย</h3>
                         </div>
-                        <div class="chart-container">
-                            <canvas id="chart-ward"></canvas>
-                        </div>
+                        <div class="chart-container"><canvas id="chart-ward"></canvas></div>
                     </div>
                 </div>
             </div>
 
+            <!-- FORM SECTION -->
             <div id="view-form" class="view-section hidden fade-in">
+                <div class="mb-4">
+                    <h3 class="font-bold text-slate-700 text-base">บันทึกข้อมูลเชิงคลินิก</h3>
+                    <p class="text-slate-500 text-xs mt-1">ฟอร์มบันทึกข้อมูลการปฏิบัติงานจริงบนหอผู้ป่วย โดยใช้แนวคิด GROWS Model ช่วยจัดโครงสร้างการนิเทศให้แก้ปัญหาได้เป็นระบบ</p>
+                </div>
                 <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden mb-6">
                     <div class="bg-teal-50 border-b border-teal-100 p-4 lg:p-6">
                         <h3 class="font-bold text-teal-900 text-lg flex items-center"><i class="fa-solid fa-notes-medical mr-2 text-teal-600"></i> แบบบันทึกการนิเทศทางการพยาบาล</h3>
-                        <p class="text-xs text-teal-700 mt-1">อ้างอิงโครงสร้าง GROWS Model ปีงบประมาณ 2569</p>
                     </div>
                     <form id="grows-form" onsubmit="app.submitForm(event)" class="p-4 lg:p-6">
                         <div class="mb-8">
-                            <h4 class="font-bold text-slate-700 mb-3 pb-2 border-b text-sm uppercase"><i class="fa-solid fa-1 text-slate-400 mr-2"></i> ข้อมูลบริบทหน่วยงาน</h4>
                             <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
-                                <div>
-                                    <label class="block text-xs font-medium text-slate-500 mb-1">วันที่</label>
-                                    <input type="date" id="f-date" required class="w-full border border-slate-300 rounded-lg px-3 py-2 outline-none focus:border-teal-500">
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-medium text-slate-500 mb-1">สัปดาห์ที่</label>
-                                    <select id="f-week" class="w-full border border-slate-300 rounded-lg px-3 py-2 outline-none focus:border-teal-500">
-                                        <option value="1">สัปดาห์ที่ 1</option><option value="2">สัปดาห์ที่ 2</option><option value="3">สัปดาห์ที่ 3</option><option value="4">สัปดาห์ที่ 4</option><option value="5">สัปดาห์ที่ 5</option>
-                                    </select>
-                                </div>
+                                <div><label class="block text-xs font-medium text-slate-500 mb-1">วันที่</label><input type="date" id="f-date" required class="w-full border border-slate-300 rounded-lg px-3 py-2 outline-none focus:border-teal-500"></div>
                                 <div>
                                     <label class="block text-xs font-medium text-slate-500 mb-1">หน่วยงาน</label>
                                     <select id="f-ward" required class="w-full border border-slate-300 rounded-lg px-3 py-2 outline-none focus:border-teal-500">
-                                        <option value="" disabled selected>-- เลือก --</option>
-                                        <option value="SCH-ICU2">SCH-ICU2</option><option value="SCH-ICU3">SCH-ICU3</option><option value="PCICU">PCICU</option>
+                                        <option value="" disabled selected>-- เลือก --</option><option value="SCH-ICU2">SCH-ICU2</option><option value="SCH-ICU3">SCH-ICU3</option><option value="PCICU">PCICU</option>
                                     </select>
                                 </div>
                                 <div>
-                                    <label class="block text-xs font-medium text-slate-500 mb-1">ยอดผู้ป่วยรวม (ราย)</label>
-                                    <input type="number" min="0" class="w-full border border-slate-300 rounded-lg px-3 py-2 outline-none focus:border-teal-500">
-                                </div>
-                            </div>
-                            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                                <div class="bg-slate-50 p-4 rounded-lg border border-slate-100">
-                                    <p class="text-[11px] font-bold text-slate-600 mb-2">การใช้อุปกรณ์ช่วยหายใจ (ราย)</p>
-                                    <div class="grid grid-cols-3 gap-2">
-                                        <div><label class="block text-[10px] text-slate-500">Ventilator</label><input type="number" min="0" class="w-full border rounded p-1 text-xs"></div>
-                                        <div><label class="block text-[10px] text-slate-500">HFOV</label><input type="number" min="0" class="w-full border rounded p-1 text-xs"></div>
-                                        <div><label class="block text-[10px] text-slate-500">HHHNC</label><input type="number" min="0" class="w-full border rounded p-1 text-xs"></div>
-                                        <div><label class="block text-[10px] text-slate-500">O2</label><input type="number" min="0" class="w-full border rounded p-1 text-xs"></div>
-                                        <div><label class="block text-[10px] text-slate-500">Room air</label><input type="number" min="0" class="w-full border rounded p-1 text-xs"></div>
-                                        <div><label class="block text-[10px] text-slate-500">Home vent</label><input type="number" min="0" class="w-full border rounded p-1 text-xs"></div>
-                                    </div>
-                                </div>
-                                <div class="bg-slate-50 p-4 rounded-lg border border-slate-100">
-                                    <p class="text-[11px] font-bold text-slate-600 mb-2">ประเภทผู้ป่วย & อัตรากำลัง</p>
-                                    <div class="grid grid-cols-5 gap-1 mb-3">
-                                        <div><label class="block text-[9px] text-slate-500 truncate">เทา</label><input type="number" min="0" class="w-full border rounded p-1 text-xs bg-slate-200"></div>
-                                        <div><label class="block text-[9px] text-slate-500 truncate">แดงเข้ม</label><input type="number" min="0" class="w-full border rounded p-1 text-xs bg-rose-200"></div>
-                                        <div><label class="block text-[9px] text-slate-500 truncate">แดงอ่อน</label><input type="number" min="0" class="w-full border rounded p-1 text-xs bg-rose-100"></div>
-                                        <div><label class="block text-[9px] text-slate-500 truncate">เหลือง</label><input type="number" min="0" class="w-full border rounded p-1 text-xs bg-amber-100"></div>
-                                        <div><label class="block text-[9px] text-slate-500 truncate">เขียว</label><input type="number" min="0" class="w-full border rounded p-1 text-xs bg-emerald-100"></div>
-                                    </div>
-                                    <div class="grid grid-cols-3 gap-2 pt-2 border-t border-slate-200">
-                                        <div><label class="block text-[10px] text-slate-500">กำลัง HN</label><input type="number" min="0" class="w-full border rounded p-1 text-xs"></div>
-                                        <div><label class="block text-[10px] text-slate-500">กำลัง RN</label><input type="number" min="0" class="w-full border rounded p-1 text-xs"></div>
-                                        <div><label class="block text-[10px] text-slate-500">กำลัง A/W</label><input type="number" min="0" class="w-full border rounded p-1 text-xs"></div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="mb-8">
-                            <h4 class="font-bold text-slate-700 mb-3 pb-2 border-b text-sm uppercase"><i class="fa-solid fa-2 text-slate-400 mr-2"></i> ข้อมูลการนิเทศ & GROWS Model</h4>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                                <div>
-                                    <label class="block text-xs font-medium text-slate-700 mb-1">หมวดหมู่ E-FIRES</label>
+                                    <label class="block text-xs font-medium text-slate-500 mb-1">หมวดหมู่ E-FIRES</label>
                                     <select id="f-cat" required class="w-full border border-slate-300 rounded-lg px-3 py-2 outline-none focus:border-teal-500">
                                         <option value="" disabled selected>-- เลือกหมวดหมู่ --</option>
-                                        <option value="Environment">Environment (สิ่งแวดล้อม/โครงสร้าง)</option>
-                                        <option value="Flow">Flow Standard (มาตรฐานรายโรค)</option>
-                                        <option value="Infection">Infection (การติดเชื้อ)</option>
-                                        <option value="Risk">Risk / Nursing Process (ความเสี่ยง)</option>
-                                        <option value="Equipment">Equipment / Symptom Mgt (อุปกรณ์/อาการ)</option>
+                                        <option value="Environment">Environment</option><option value="Flow">Flow Standard</option><option value="Infection">Infection</option><option value="Risk">Risk</option><option value="Equipment">Equipment</option>
                                     </select>
                                 </div>
-                                <div>
-                                    <label class="block text-xs font-medium text-slate-700 mb-1">เรื่องที่นิเทศ</label>
-                                    <input type="text" id="f-topic" required placeholder="เช่น Sepsis, Hand hygiene, ขยะ" class="w-full border border-slate-300 rounded-lg px-3 py-2 outline-none focus:border-teal-500">
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-medium text-slate-700 mb-1">ผู้รับการนิเทศ</label>
-                                    <input type="text" placeholder="ชื่อผู้รับ" class="w-full border border-slate-300 rounded-lg px-3 py-2 outline-none focus:border-teal-500">
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-medium text-slate-700 mb-1">ผู้นิเทศ</label>
-                                    <select id="f-supervisor" required class="w-full border border-slate-300 rounded-lg px-3 py-2 outline-none focus:border-teal-500"></select>
-                                </div>
+                                <div><label class="block text-xs font-medium text-slate-500 mb-1">เรื่องที่นิเทศ</label><input type="text" id="f-topic" required placeholder="เช่น Sepsis, ขยะ" class="w-full border border-slate-300 rounded-lg px-3 py-2 outline-none focus:border-teal-500"></div>
                             </div>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                <div><label class="block text-xs font-medium text-slate-500 mb-1">ผู้รับการนิเทศ</label><input type="text" placeholder="ชื่อผู้รับ" class="w-full border border-slate-300 rounded-lg px-3 py-2 outline-none focus:border-teal-500"></div>
+                                <div><label class="block text-xs font-medium text-slate-500 mb-1">ผู้นิเทศ</label><select id="f-supervisor" required class="w-full border border-slate-300 rounded-lg px-3 py-2 outline-none focus:border-teal-500"></select></div>
+                            </div>
+                            
                             <div class="space-y-3 bg-white border border-slate-200 rounded-lg p-4">
-                                <div>
-                                    <label class="flex items-center text-xs font-bold text-slate-700 mb-1"><span class="w-5 h-5 rounded bg-slate-800 text-white flex items-center justify-center mr-2 text-[10px]">G</span> Goal (เป้าหมาย)</label>
-                                    <textarea rows="1" class="w-full border border-slate-300 rounded px-2 py-1 text-xs outline-none focus:border-teal-500"></textarea>
-                                </div>
-                                <div>
-                                    <label class="flex items-center text-xs font-bold text-slate-700 mb-1"><span class="w-5 h-5 rounded bg-slate-800 text-white flex items-center justify-center mr-2 text-[10px]">R</span> Reality (สถานการณ์ที่เกิดขึ้น)</label>
-                                    <textarea rows="2" class="w-full border border-slate-300 rounded px-2 py-1 text-xs outline-none focus:border-teal-500"></textarea>
-                                </div>
-                                <div>
-                                    <label class="flex items-center text-xs font-bold text-slate-700 mb-1"><span class="w-5 h-5 rounded bg-slate-800 text-white flex items-center justify-center mr-2 text-[10px]">O</span> Option (ทางเลือกในการแก้ปัญหา)</label>
-                                    <textarea rows="2" class="w-full border border-slate-300 rounded px-2 py-1 text-xs outline-none focus:border-teal-500"></textarea>
-                                </div>
-                                <div>
-                                    <label class="flex items-center text-xs font-bold text-slate-700 mb-1"><span class="w-5 h-5 rounded bg-slate-800 text-white flex items-center justify-center mr-2 text-[10px]">W</span> What next (จะทำอะไรต่อไป)</label>
-                                    <textarea rows="2" class="w-full border border-slate-300 rounded px-2 py-1 text-xs outline-none focus:border-teal-500"></textarea>
-                                </div>
-                                <div>
-                                    <label class="flex items-center text-xs font-bold text-slate-700 mb-1"><span class="w-5 h-5 rounded bg-slate-800 text-white flex items-center justify-center mr-2 text-[10px]">S</span> Study (เรียนรู้สิ่งที่เกิดขึ้นอย่างไร)</label>
-                                    <textarea rows="1" class="w-full border border-slate-300 rounded px-2 py-1 text-xs outline-none focus:border-teal-500"></textarea>
-                                </div>
+                                <div><label class="flex items-center text-xs font-bold text-slate-700 mb-1">G - Goal (เป้าหมาย)</label><textarea rows="1" class="w-full border border-slate-300 rounded px-2 py-1 text-xs outline-none focus:border-teal-500"></textarea></div>
+                                <div><label class="flex items-center text-xs font-bold text-slate-700 mb-1">R - Reality (สถานการณ์ที่เกิดขึ้น)</label><textarea rows="2" class="w-full border border-slate-300 rounded px-2 py-1 text-xs outline-none focus:border-teal-500"></textarea></div>
+                                <div><label class="flex items-center text-xs font-bold text-slate-700 mb-1">O - Option (ทางเลือกในการแก้ปัญหา)</label><textarea rows="2" class="w-full border border-slate-300 rounded px-2 py-1 text-xs outline-none focus:border-teal-500"></textarea></div>
+                                <div><label class="flex items-center text-xs font-bold text-slate-700 mb-1">W - What next (จะทำอะไรต่อไป)</label><textarea rows="2" class="w-full border border-slate-300 rounded px-2 py-1 text-xs outline-none focus:border-teal-500"></textarea></div>
                             </div>
                         </div>
 
                         <div class="p-4 bg-slate-50 border border-slate-200 rounded-lg flex flex-col sm:flex-row items-center justify-between gap-4">
-                            <div>
-                                <p class="text-sm font-bold text-slate-800">สถานะหลังการนิเทศ</p>
-                                <p class="text-[10px] text-slate-500">ประเมินจากขั้นตอน What next เพื่อใช้ติดตามผล</p>
-                            </div>
+                            <div><p class="text-sm font-bold text-slate-800">สถานะหลังการนิเทศ (เพื่อการติดตามผล)</p></div>
                             <div class="flex items-center gap-4 bg-white p-2 rounded border border-slate-300">
-                                <label class="flex items-center gap-1 text-sm font-medium text-emerald-700 cursor-pointer">
-                                    <input type="radio" name="f_status" value="done" checked class="w-4 h-4 accent-emerald-600"> <i class="fa-solid fa-check-circle"></i> แก้ไขแล้ว
-                                </label>
+                                <label class="flex items-center gap-1 text-sm font-medium text-emerald-700 cursor-pointer"><input type="radio" name="f_status" value="done" checked class="w-4 h-4 accent-emerald-600"> <i class="fa-solid fa-check-circle"></i> แก้ไขแล้ว</label>
                                 <div class="w-px h-5 bg-slate-300"></div>
-                                <label class="flex items-center gap-1 text-sm font-medium text-rose-600 cursor-pointer">
-                                    <input type="radio" name="f_status" value="pending" class="w-4 h-4 accent-rose-600"> <i class="fa-solid fa-clock"></i> รอติดตามผล
-                                </label>
+                                <label class="flex items-center gap-1 text-sm font-medium text-rose-600 cursor-pointer"><input type="radio" name="f_status" value="pending" class="w-4 h-4 accent-rose-600"> <i class="fa-solid fa-clock"></i> รอติดตามผล</label>
                             </div>
                         </div>
 
                         <div class="mt-6 flex justify-end gap-3 print:hidden">
-                            <button type="button" onclick="window.print()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium py-2 px-6 rounded-lg transition-colors flex items-center gap-2 border border-slate-300">
-                                <i class="fa-solid fa-print"></i> พิมพ์เอกสาร
-                            </button>
-                            <button type="submit" class="bg-teal-600 hover:bg-teal-700 text-white font-medium py-2 px-6 rounded-lg transition-colors flex items-center gap-2">
-                                <i class="fa-solid fa-save"></i> บันทึกข้อมูล
-                            </button>
+                            <button type="button" onclick="window.print()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium py-2 px-6 rounded-lg border border-slate-300 transition-colors"><i class="fa-solid fa-print"></i> พิมพ์ฟอร์ม</button>
+                            <button type="submit" class="bg-teal-600 hover:bg-teal-700 text-white font-medium py-2 px-6 rounded-lg transition-colors"><i class="fa-solid fa-save"></i> บันทึกข้อมูลไปยัง Database</button>
                         </div>
                     </form>
                 </div>
             </div>
 
+            <!-- REPORTS SECTION -->
+            <div id="view-reports" class="view-section hidden fade-in">
+                <div class="mb-4">
+                    <h3 class="font-bold text-slate-700 text-base">ฐานข้อมูลประวัติการนิเทศ</h3>
+                    <p class="text-slate-500 text-xs mt-1">ดูประวัติการนิเทศย้อนหลังแบบเรียลไทม์ และสามารถส่งออก (Export) เป็นไฟล์ CSV เพื่อนำไปวิเคราะห์ใน Excel ต่อได้</p>
+                </div>
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                    <div class="p-4 border-b border-slate-200 flex flex-col md:flex-row justify-between items-center gap-4 bg-slate-50">
+                        <div class="flex items-center gap-2"><i class="fa-solid fa-table-list text-indigo-500"></i><h3 class="font-bold text-slate-800">ตารางข้อมูลดิบ</h3></div>
+                        <div class="flex flex-wrap gap-2 w-full md:w-auto">
+                            <select id="r-ward" class="border border-slate-300 rounded px-2 py-1.5 text-xs outline-none" onchange="app.renderReportsTable()">
+                                <option value="all">ทุกหอผู้ป่วย</option><option value="SCH-ICU2">SCH-ICU2</option><option value="SCH-ICU3">SCH-ICU3</option><option value="PCICU">PCICU</option>
+                            </select>
+                            <select id="r-status" class="border border-slate-300 rounded px-2 py-1.5 text-xs outline-none" onchange="app.renderReportsTable()">
+                                <option value="all">ทุกสถานะ</option><option value="done">แก้ไขแล้ว (Done)</option><option value="pending">รอติดตาม (Pending)</option>
+                            </select>
+                            <button onclick="app.exportDataToCSV()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded text-xs font-medium"><i class="fa-solid fa-file-csv"></i> โหลด CSV</button>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse text-xs">
+                            <thead><tr class="bg-slate-100 text-slate-600 border-b border-slate-200">
+                                <th class="p-3 font-semibold">วันที่</th><th class="p-3 font-semibold">วอร์ด</th><th class="p-3 font-semibold">หมวดหมู่</th><th class="p-3 font-semibold">เรื่อง</th><th class="p-3 font-semibold">ผู้นิเทศ</th><th class="p-3 font-semibold text-center">สถานะ</th>
+                            </tr></thead>
+                            <tbody id="reports-tbody" class="divide-y divide-slate-100"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PLAN SECTION -->
             <div id="view-plan" class="view-section hidden fade-in">
+                <div class="mb-4">
+                    <h3 class="font-bold text-slate-700 text-base">แผนปฏิบัติการและมาตรฐาน</h3>
+                    <p class="text-slate-500 text-xs mt-1">อ้างอิงตารางการปฏิบัติงานประจำปีงบประมาณ 2569 แยกตามบทบาทเพื่อใช้เป็นไกด์ไลน์ในการเดินนิเทศคลินิก</p>
+                </div>
                 <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 lg:p-6 mb-6">
                     <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
                         <div>
@@ -444,53 +369,16 @@
                 </div>
             </div>
 
-            <div id="view-reports" class="view-section hidden fade-in">
-                <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-                    <div class="p-4 border-b border-slate-200 flex flex-col md:flex-row justify-between items-center gap-4 bg-slate-50">
-                        <div class="flex items-center gap-2">
-                            <i class="fa-solid fa-table-list text-indigo-500"></i>
-                            <h3 class="font-bold text-slate-800">รายงานข้อมูลการนิเทศ</h3>
-                        </div>
-                        <div class="flex flex-wrap gap-2 w-full md:w-auto">
-                            <select id="r-ward" class="border border-slate-300 rounded px-2 py-1.5 text-xs flex-1 md:flex-none outline-none" onchange="app.renderReportsTable()">
-                                <option value="all">ทุกหอผู้ป่วย</option>
-                                <option value="SCH-ICU2">SCH-ICU2</option><option value="SCH-ICU3">SCH-ICU3</option><option value="PCICU">PCICU</option>
-                            </select>
-                            <select id="r-status" class="border border-slate-300 rounded px-2 py-1.5 text-xs flex-1 md:flex-none outline-none" onchange="app.renderReportsTable()">
-                                <option value="all">ทุกสถานะ</option>
-                                <option value="done">แก้ไขแล้ว (Done)</option>
-                                <option value="pending">รอติดตาม (Pending)</option>
-                            </select>
-                            <button onclick="app.exportDataToCSV()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded text-xs font-medium transition-colors flex items-center justify-center gap-2 w-full md:w-auto">
-                                <i class="fa-solid fa-file-csv"></i> ส่งออกข้อมูล (CSV)
-                            </button>
-                        </div>
-                    </div>
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left border-collapse text-xs">
-                            <thead>
-                                <tr class="bg-slate-100 text-slate-600 border-b border-slate-200">
-                                    <th class="p-3 font-semibold">วันที่</th>
-                                    <th class="p-3 font-semibold">วอร์ด</th>
-                                    <th class="p-3 font-semibold">หมวดหมู่</th>
-                                    <th class="p-3 font-semibold">เรื่องที่นิเทศ</th>
-                                    <th class="p-3 font-semibold">ผู้นิเทศ</th>
-                                    <th class="p-3 font-semibold text-center">สถานะ</th>
-                                </tr>
-                            </thead>
-                            <tbody id="reports-tbody" class="divide-y divide-slate-100"></tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
+            <!-- PERSONNEL SECTION -->
             <div id="view-personnel" class="view-section hidden fade-in">
+                <div class="mb-4">
+                    <h3 class="font-bold text-slate-700 text-base">การจัดการระบบ</h3>
+                    <p class="text-slate-500 text-xs mt-1">อัปเดตรายชื่อบุคลากรหรือผู้นิเทศ เพื่อให้ปรากฏในตัวเลือกของแบบฟอร์มการบันทึกข้อมูล</p>
+                </div>
                 <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
                     <div class="flex justify-between items-center mb-6">
-                        <h3 class="font-bold text-slate-800 text-lg"><i class="fa-solid fa-users-gear text-rose-500 mr-2"></i> จัดการรายชื่อบุคลากร</h3>
-                        <button onclick="app.addPersonnel()" class="bg-rose-500 hover:bg-rose-600 text-white px-3 py-1.5 rounded text-xs font-medium transition-colors flex items-center gap-1">
-                            <i class="fa-solid fa-plus"></i> เพิ่ม
-                        </button>
+                        <h3 class="font-bold text-slate-800 text-lg"><i class="fa-solid fa-users-gear text-rose-500 mr-2"></i> จัดการรายชื่อ</h3>
+                        <button onclick="app.addPersonnel()" class="bg-rose-500 hover:bg-rose-600 text-white px-3 py-1.5 rounded text-xs font-medium"><i class="fa-solid fa-plus"></i> เพิ่มรายชื่อ</button>
                     </div>
                     <div id="personnel-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
                 </div>
@@ -501,374 +389,240 @@
 
     <script>
         const app = {
-            SCRIPT_URL: 'YOUR_GOOGLE_SCRIPT_WEB_APP_URL_HERE',
+            // Configuration injected from the user's provided Firebase console details
+            firebaseConfig: {
+                apiKey: "AIzaSyC6GoUcNJf3MeC01IQCmWkUshijStAqxwo",
+                authDomain: "nursing-dashboard-2569.firebaseapp.com",
+                projectId: "nursing-dashboard-2569",
+                storageBucket: "nursing-dashboard-2569.firebasestorage.app",
+                messagingSenderId: "126642576674",
+                appId: "1:126642576674:web:0a06056a0fd328c6ba597b",
+                measurementId: "G-6EEEH017GY"
+            },
 
             state: {
-                view: 'dashboard',
-                sidebar: false,
-                personnel: [
-                    'พว.สมหญิง รักดี (HN)', 
-                    'พว.ใจดี มีสุข (SN)', 
-                    'พว.ขยัน อดทน (RN)'
-                ],
-                mockData: [],
-                charts: {}
+                view: 'dashboard', sidebar: false,
+                // Default personnel pre-filled based on target user context
+                personnel: ['พว.พัฒนพร ตรีสูนย์ (HN)', 'พว.สมหญิง รักดี (SN)', 'พว.ขยัน อดทน (RN)'],
+                dbData: [], charts: {}, db: null
             },
 
             init() {
-                this.checkLogin(); // ตรวจสอบสถานะการ Login
-                this.generateMockData();
+                this.checkLogin();
                 this.updatePersonnelDropdown();
                 this.renderPersonnelList();
                 this.renderPlans();
                 this.navigate('dashboard');
+                
+                if(sessionStorage.getItem('isLoggedIn') === 'true'){
+                    this.initFirebase();
+                }
             },
 
-            // --- ระบบ Login ---
+            initFirebase() {
+                if(!this.firebaseConfig.apiKey) {
+                    console.warn("API key is missing.");
+                    return;
+                }
+                if (!firebase.apps.length) {
+                    firebase.initializeApp(this.firebaseConfig);
+                }
+                this.state.db = firebase.firestore();
+                this.fetchDataRealtime();
+            },
+
+            fetchDataRealtime() {
+                this.state.db.collection("supervisions").orderBy("date", "desc").onSnapshot((querySnapshot) => {
+                    const data = [];
+                    querySnapshot.forEach((doc) => {
+                        data.push({ id: doc.id, ...doc.data() });
+                    });
+                    this.state.dbData = data;
+                    
+                    if(this.state.view === 'dashboard') this.renderDashboard();
+                    if(this.state.view === 'reports') this.renderReportsTable();
+                });
+            },
+
+            async submitForm(e) {
+                e.preventDefault();
+                if(!this.state.db) {
+                    alert('ไม่สามารถเชื่อมต่อฐานข้อมูลได้ กรุณาตรวจสอบการตั้งค่า Firebase');
+                    return;
+                }
+                
+                const btn = e.target.querySelector('button[type="submit"]');
+                const origHtml = btn.innerHTML;
+                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> กำลังบันทึก...';
+                btn.disabled = true;
+
+                const newEntry = {
+                    date: document.getElementById('f-date').value,
+                    ward: document.getElementById('f-ward').value,
+                    cat: document.getElementById('f-cat').value,
+                    topic: document.getElementById('f-topic').value,
+                    supervisor: document.getElementById('f-supervisor').value,
+                    status: document.querySelector('input[name="f_status"]:checked').value,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                };
+
+                try {
+                    await this.state.db.collection("supervisions").add(newEntry);
+                    
+                    if (confirm('บันทึกข้อมูลเรียบร้อยแล้ว!
+
+คุณต้องการพิมพ์เอกสารเก็บไว้หรือไม่?')) {
+                        window.print();
+                    }
+                    e.target.reset();
+                    this.navigate('dashboard');
+                } catch(err) {
+                    alert('เกิดข้อผิดพลาดในการบันทึก: ' + err.message);
+                } finally {
+                    btn.innerHTML = origHtml;
+                    btn.disabled = false;
+                }
+            },
+
             handleLogin(e) {
                 e.preventDefault();
-                const user = document.getElementById('login-username').value;
-                const pass = document.getElementById('login-password').value;
-                const errorMsg = document.getElementById('login-error');
-
-                // กำหนด Username & Password สำหรับเข้าใช้งาน
-                if (user === 'admin' && pass === 'admin') {
-                    // เข้าสู่ระบบสำเร็จ
-                    errorMsg.classList.add('hidden');
-                    sessionStorage.setItem('isLoggedIn', 'true'); // บันทึกสถานะไว้ใน Session
+                if (document.getElementById('login-username').value === 'admin' && document.getElementById('login-password').value === 'admin') {
+                    document.getElementById('login-error').classList.add('hidden');
+                    sessionStorage.setItem('isLoggedIn', 'true');
+                    this.initFirebase();
                     
-                    const loginScreen = document.getElementById('login-screen');
-                    loginScreen.style.opacity = '0';
-                    setTimeout(() => {
-                        loginScreen.classList.add('hidden');
-                    }, 300); // หน่วงเวลาให้ตรงกับ transition-opacity
+                    const scr = document.getElementById('login-screen');
+                    scr.style.opacity = '0';
+                    setTimeout(() => scr.classList.add('hidden'), 300); 
                 } else {
-                    // เข้าสู่ระบบไม่สำเร็จ
-                    errorMsg.classList.remove('hidden');
-                    // ซ่อนแจ้งเตือนอัตโนมัติหลัง 3 วินาที
-                    setTimeout(() => errorMsg.classList.add('hidden'), 3000);
+                    document.getElementById('login-error').classList.remove('hidden');
                 }
             },
 
             checkLogin() {
-                // ถ้าเคย Login แล้วใน Session นี้ ให้ซ่อนหน้า Login เลย
                 if (sessionStorage.getItem('isLoggedIn') === 'true') {
                     document.getElementById('login-screen').classList.add('hidden');
                 }
             },
 
             logout() {
-                if (confirm('คุณต้องการออกจากระบบใช่หรือไม่?')) {
-                    sessionStorage.removeItem('isLoggedIn'); // ลบสถานะ
-                    document.getElementById('login-form').reset(); // ล้างช่องกรอกรหัส
-                    
-                    const loginScreen = document.getElementById('login-screen');
-                    loginScreen.classList.remove('hidden');
-                    // หน่วงเวลาเล็กน้อยเพื่อให้เบราว์เซอร์ลบ class hidden ทันก่อนเฟดกลับมา
-                    setTimeout(() => {
-                        loginScreen.style.opacity = '1';
-                    }, 10);
-                    
-                    // เด้งกลับไปหน้า Dashboard รอไว้หลัง Login รอบหน้า
-                    this.navigate('dashboard');
+                if(confirm('คุณต้องการออกจากระบบใช่หรือไม่?')) {
+                    sessionStorage.removeItem('isLoggedIn');
+                    location.reload();
                 }
             },
-            // --- จบระบบ Login ---
 
             toggleSidebar() {
                 this.state.sidebar = !this.state.sidebar;
                 const sb = document.getElementById('sidebar');
-                if(this.state.sidebar) {
-                    sb.classList.remove('-translate-x-full');
-                } else {
-                    sb.classList.add('-translate-x-full');
-                }
+                this.state.sidebar ? sb.classList.remove('-translate-x-full') : sb.classList.add('-translate-x-full');
             },
 
             navigate(viewId) {
                 document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
                 document.getElementById(`view-${viewId}`).classList.remove('hidden');
+                document.querySelectorAll('.nav-btn').forEach(el => { el.classList.remove('text-white', 'bg-slate-800'); el.classList.add('text-slate-400'); });
                 
-                document.querySelectorAll('.nav-btn').forEach(el => {
-                    el.classList.remove('text-white', 'bg-slate-800');
-                    if(el.dataset.target !== 'dashboard') el.classList.add('text-slate-400');
-                    if(el.dataset.target === 'dashboard') el.classList.add('text-slate-400');
-                });
-                
-                const activeBtn = document.querySelector(`.nav-btn[data-target="${viewId}"]`);
-                if(activeBtn) {
-                    activeBtn.classList.remove('text-slate-400');
-                    activeBtn.classList.add('text-white', 'bg-slate-800');
-                }
+                const btn = document.querySelector(`.nav-btn[data-target="${viewId}"]`);
+                if(btn) { btn.classList.remove('text-slate-400'); btn.classList.add('text-white', 'bg-slate-800'); }
 
-                const titles = {
-                    'dashboard': 'Dashboard สรุปผู้บริหาร',
-                    'form': 'บันทึกการนิเทศ (GROWS)',
-                    'plan': 'แผนการนิเทศงาน ปี 2569',
-                    'reports': 'รายงานเพื่อนำไปใช้งาน',
-                    'personnel': 'ตั้งค่ารายชื่อบุคลากร'
-                };
-                document.getElementById('page-title').innerText = titles[viewId];
                 this.state.view = viewId;
-
                 if(viewId === 'dashboard') this.renderDashboard();
                 if(viewId === 'reports') this.renderReportsTable();
             },
 
-            generateMockData() {
-                const wards = ['SCH-ICU2', 'SCH-ICU3', 'PCICU'];
-                const cats = ['Environment', 'Flow', 'Infection', 'Risk', 'Equipment'];
-                const topics = ['Sepsis', 'Hand hygiene', 'Ventilator', 'ขยะ', 'HRMS', 'Pneumonia'];
-                
-                for(let i=0; i<150; i++) {
-                    const isDone = Math.random() > 0.25; 
-                    this.state.mockData.push({
-                        id: i,
-                        date: `2025-10-${String(Math.floor(Math.random()*28)+1).padStart(2,'0')}`,
-                        ward: wards[Math.floor(Math.random()*wards.length)],
-                        cat: cats[Math.floor(Math.random()*cats.length)],
-                        topic: topics[Math.floor(Math.random()*topics.length)],
-                        supervisor: this.state.personnel[Math.floor(Math.random()*this.state.personnel.length)],
-                        status: isDone ? 'done' : 'pending'
-                    });
-                }
-                this.state.mockData.sort((a,b) => new Date(b.date) - new Date(a.date));
-            },
-
             renderDashboard() {
                 const wardFilter = document.getElementById('dash-ward-filter').value;
-                let filteredData = this.state.mockData;
-                
-                if(wardFilter !== 'all') {
-                    filteredData = filteredData.filter(x => x.ward === wardFilter);
-                }
+                let data = this.state.dbData;
+                if(wardFilter !== 'all') data = data.filter(x => x.ward === wardFilter);
 
-                const total = filteredData.length;
-                const doneCount = filteredData.filter(x => x.status === 'done').length;
-                const pendingCount = filteredData.filter(x => x.status === 'pending').length;
-                
-                let resolutionRate = 0;
-                if(total > 0) resolutionRate = Math.round((doneCount / total) * 100);
+                const total = data.length;
+                const doneCount = data.filter(x => x.status === 'done').length;
+                let rate = total > 0 ? Math.round((doneCount/total)*100) : 0;
 
+                document.getElementById('kpi-total').innerText = total;
+                document.getElementById('kpi-done').innerText = doneCount;
+                document.getElementById('kpi-rate').innerText = `${rate}%`;
+                document.getElementById('kpi-pending').innerText = total - doneCount;
+                
+                // Identify Top Category
                 const catCounts = {};
-                filteredData.forEach(d => { catCounts[d.cat] = (catCounts[d.cat] || 0) + 1; });
+                data.forEach(d => { catCounts[d.cat] = (catCounts[d.cat] || 0) + 1; });
                 let topCat = '-';
                 if(Object.keys(catCounts).length > 0) {
                     topCat = Object.keys(catCounts).reduce((a, b) => catCounts[a] > catCounts[b] ? a : b);
                 }
-
-                document.getElementById('kpi-total').innerText = total;
-                document.getElementById('kpi-done').innerText = doneCount;
-                document.getElementById('kpi-rate').innerText = `${resolutionRate}%`;
-                document.getElementById('kpi-pending').innerText = pendingCount;
                 document.getElementById('kpi-top-cat').innerText = topCat;
 
+                if(this.state.charts.ward) this.state.charts.ward.destroy();
+                const ctxW = document.getElementById('chart-ward').getContext('2d');
+                let labels = ['SCH-ICU2', 'SCH-ICU3', 'PCICU'];
+                let counts = labels.map(w => data.filter(x => x.ward === w).length);
+                if(wardFilter !== 'all') { labels = [wardFilter]; counts = [data.filter(x => x.ward === wardFilter).length]; }
+                
+                this.state.charts.ward = new Chart(ctxW, {
+                    type: 'bar', data: { labels: labels, datasets: [{ data: counts, backgroundColor: ['#38bdf8', '#818cf8', '#34d399'].slice(0, labels.length), borderRadius: 4 }] },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: {stepSize: 1} } } }
+                });
+
                 if(this.state.charts.trend) this.state.charts.trend.destroy();
-                const ctxTrend = document.getElementById('chart-trend').getContext('2d');
+                const ctxT = document.getElementById('chart-trend').getContext('2d');
                 const cats = ['Environment', 'Flow', 'Infection', 'Risk', 'Equipment'];
                 const colors = ['#10b981', '#0ea5e9', '#f43f5e', '#f59e0b', '#8b5cf6'];
                 
-                const datasets = cats.map((cat, i) => {
-                    const catTotal = filteredData.filter(x => x.cat === cat).length;
-                    return {
-                        label: cat,
-                        data: [Math.floor(catTotal*0.2), Math.floor(catTotal*0.3), Math.floor(catTotal*0.2), catTotal - Math.floor(catTotal*0.2)*2 - Math.floor(catTotal*0.3)],
-                        borderColor: colors[i],
-                        backgroundColor: colors[i],
-                        tension: 0.3,
-                        borderWidth: 2
-                    }
+                // Grouping by artificial week segments just for demonstration based on the raw count
+                const tData = cats.map((cat, i) => {
+                    const ct = data.filter(x => x.cat === cat).length;
+                    return { label: cat, data: [Math.floor(ct*0.2), Math.floor(ct*0.4), Math.floor(ct*0.2), ct - Math.floor(ct*0.2)*2 - Math.floor(ct*0.4)], borderColor: colors[i], backgroundColor: colors[i], tension: 0.3 }
                 });
-
-                this.state.charts.trend = new Chart(ctxTrend, {
-                    type: 'line',
-                    data: { labels: ['สัปดาห์ 1', 'สัปดาห์ 2', 'สัปดาห์ 3', 'สัปดาห์ 4'], datasets: datasets },
-                    options: { 
-                        responsive: true, maintainAspectRatio: false,
-                        plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: {size: 10} } } },
-                        scales: { y: { beginAtZero: true, ticks: {font: {size: 10}} }, x: {ticks: {font: {size: 10}}} }
-                    }
+                this.state.charts.trend = new Chart(ctxT, {
+                    type: 'line', data: { labels: ['W1', 'W2', 'W3', 'W4'], datasets: tData },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: {size: 10} } } } }
                 });
-
-                if(this.state.charts.ward) this.state.charts.ward.destroy();
-                const ctxWard = document.getElementById('chart-ward').getContext('2d');
-                
-                let labels = ['SCH-ICU2', 'SCH-ICU3', 'PCICU'];
-                let wardCounts = labels.map(w => filteredData.filter(x => x.ward === w).length);
-                
-                if(wardFilter !== 'all') {
-                    labels = [wardFilter];
-                    wardCounts = [filteredData.filter(x => x.ward === wardFilter).length];
-                }
-
-                this.state.charts.ward = new Chart(ctxWard, {
-                    type: 'bar',
-                    data: {
-                        labels: labels,
-                        datasets: [{
-                            label: 'จำนวนนิเทศ',
-                            data: wardCounts,
-                            backgroundColor: ['#38bdf8', '#818cf8', '#34d399'].slice(0, labels.length),
-                            borderRadius: 4
-                        }]
-                    },
-                    options: {
-                        responsive: true, maintainAspectRatio: false,
-                        plugins: { legend: { display: false } },
-                        scales: { y: { beginAtZero: true, ticks: {font: {size: 10}} }, x: {ticks: {font: {size: 10}}} }
-                    }
-                });
-            },
-
-            async submitForm(e) {
-                e.preventDefault();
-                
-                const submitBtn = e.target.querySelector('button[type="submit"]');
-                const originalBtnHTML = submitBtn.innerHTML;
-                submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> กำลังบันทึก...';
-                submitBtn.disabled = true;
-
-                const newEntry = {
-                    id: Date.now(),
-                    date: document.getElementById('f-date').value,
-                    ward: document.getElementById('f-ward').value,
-                    cat: document.getElementById('f-cat').value,
-                    topic: document.getElementById('f-topic').value,
-                    supervisor: document.getElementById('f-supervisor').value,
-                    status: document.querySelector('input[name="f_status"]:checked').value
-                };
-
-                try {
-                    if (this.SCRIPT_URL && this.SCRIPT_URL !== 'https://script.google.com/macros/s/AKfycbzQ1_4VjlaNopagdQ2N6C613Mm7FiaBnkyWb7eiyXZLkQ2fIgYKMrRL-AUJG5yFN11PvA/exec') {
-                        await fetch(this.SCRIPT_URL, {
-                            method: 'POST',
-                            body: JSON.stringify(newEntry),
-                            headers: {
-                                'Content-Type': 'text/plain;charset=utf-8',
-                            }
-                        });
-                    }
-
-                    this.state.mockData.unshift(newEntry);
-                    
-                    if (confirm('บันทึกข้อมูลสำเร็จ!\n\n(ข้อมูลถูกส่งเข้า Google Sheets เรียบร้อย)\nคุณต้องการพิมพ์แบบฟอร์มนี้เก็บไว้เป็นหลักฐานหรือไม่?\n- กด OK เพื่อพิมพ์\n- กด Cancel เพื่อกลับหน้า Dashboard')) {
-                        window.print();
-                        setTimeout(() => {
-                            e.target.reset();
-                            this.navigate('dashboard');
-                        }, 1000);
-                    } else {
-                        e.target.reset();
-                        this.navigate('dashboard');
-                    }
-                } catch (error) {
-                    console.error("Error saving data:", error);
-                    alert("เกิดข้อผิดพลาดในการบันทึกข้อมูล กรุณาตรวจสอบอินเทอร์เน็ตและลองใหม่อีกครั้ง");
-                } finally {
-                    submitBtn.innerHTML = originalBtnHTML;
-                    submitBtn.disabled = false;
-                }
             },
 
             renderReportsTable() {
-                const ward = document.getElementById('r-ward').value;
-                const status = document.getElementById('r-status').value;
-                const tbody = document.getElementById('reports-tbody');
-                
-                let filtered = this.state.mockData;
-                if(ward !== 'all') filtered = filtered.filter(x => x.ward === ward);
-                if(status !== 'all') filtered = filtered.filter(x => x.status === status);
+                const w = document.getElementById('r-ward').value;
+                const s = document.getElementById('r-status').value;
+                let data = this.state.dbData;
+                if(w !== 'all') data = data.filter(x => x.ward === w);
+                if(s !== 'all') data = data.filter(x => x.status === s);
 
-                tbody.innerHTML = '';
-                filtered.slice(0, 50).forEach(r => {
+                const tb = document.getElementById('reports-tbody');
+                tb.innerHTML = '';
+                data.forEach(r => {
                     const st = r.status === 'done' ? '<span class="text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">แก้ไขแล้ว</span>' : '<span class="text-rose-600 bg-rose-50 px-2 py-0.5 rounded border border-rose-200">รอติดตาม</span>';
-                    tbody.innerHTML += `
-                        <tr class="hover:bg-slate-50">
-                            <td class="p-3 text-slate-500">${r.date}</td>
-                            <td class="p-3 font-medium">${r.ward}</td>
-                            <td class="p-3 text-sky-600">${r.cat}</td>
-                            <td class="p-3 truncate max-w-[150px]">${r.topic}</td>
-                            <td class="p-3">${r.supervisor}</td>
-                            <td class="p-3 text-center">${st}</td>
-                        </tr>
-                    `;
+                    tb.innerHTML += `<tr class="hover:bg-slate-50"><td class="p-3 text-slate-500">${r.date}</td><td class="p-3 font-medium">${r.ward}</td><td class="p-3 text-sky-600">${r.cat}</td><td class="p-3 truncate max-w-[150px]">${r.topic}</td><td class="p-3">${r.supervisor}</td><td class="p-3 text-center">${st}</td></tr>`;
                 });
             },
 
             exportDataToCSV() {
-                const ward = document.getElementById('r-ward').value;
-                const status = document.getElementById('r-status').value;
+                let data = this.state.dbData;
+                if(data.length === 0) return alert("ไม่มีข้อมูลที่จะส่งออก");
+                let csv = "﻿วันที่,หอผู้ป่วย,หมวดหมู่,เรื่องที่นิเทศ,ผู้นิเทศ,สถานะ
+";
+                data.forEach(r => csv += `"${r.date}","${r.ward}","${r.cat}","${r.topic}","${r.supervisor}","${r.status==='done'?'เสร็จ':'รอติดตาม'}"
+`);
                 
-                let filtered = this.state.mockData;
-                if(ward !== 'all') filtered = filtered.filter(x => x.ward === ward);
-                if(status !== 'all') filtered = filtered.filter(x => x.status === status);
-
-                if(filtered.length === 0) {
-                    alert("ไม่มีข้อมูลที่จะส่งออก");
-                    return;
-                }
-
-                let csvContent = "\uFEFF"; 
-                csvContent += "วันที่,หอผู้ป่วย,หมวดหมู่ (E-FIRES),เรื่องที่นิเทศ,ผู้นิเทศ,สถานะการติดตาม\n";
-
-                filtered.forEach(row => {
-                    const date = `"${row.date}"`;
-                    const w = `"${row.ward}"`;
-                    const cat = `"${row.cat}"`;
-                    const topic = `"${row.topic}"`;
-                    const supervisor = `"${row.supervisor}"`;
-                    const st = `"${row.status === 'done' ? 'แก้ไขแล้วเสร็จ' : 'รอติดตามผล'}"`;
-                    
-                    csvContent += [date, w, cat, topic, supervisor, st].join(",") + "\n";
-                });
-
-                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-                const url = URL.createObjectURL(blob);
                 const link = document.createElement("a");
-                link.setAttribute("href", url);
-                link.setAttribute("download", `รายงานนิเทศกุมารสาย1_${new Date().toISOString().split('T')[0]}.csv`);
-                document.body.appendChild(link);
+                link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
+                link.download = `รายงานนิเทศกุมารสาย1.csv`;
                 link.click();
-                document.body.removeChild(link);
             },
 
             updatePersonnelDropdown() {
                 const sel = document.getElementById('f-supervisor');
                 sel.innerHTML = '<option value="" disabled selected>-- เลือกผู้นิเทศ --</option>';
-                this.state.personnel.forEach(p => {
-                    sel.innerHTML += `<option value="${p}">${p}</option>`;
-                });
+                this.state.personnel.forEach(p => sel.innerHTML += `<option value="${p}">${p}</option>`);
             },
 
             renderPersonnelList() {
                 const list = document.getElementById('personnel-list');
                 list.innerHTML = '';
-                this.state.personnel.forEach((p, i) => {
-                    list.innerHTML += `
-                        <div class="border border-slate-200 rounded p-3 flex justify-between items-center bg-slate-50">
-                            <span class="font-medium text-slate-700 text-xs"><i class="fa-solid fa-user text-slate-400 mr-2"></i> ${p}</span>
-                            <button onclick="app.removePersonnel(${i})" class="text-slate-400 hover:text-rose-500"><i class="fa-solid fa-trash"></i></button>
-                        </div>
-                    `;
-                });
+                this.state.personnel.forEach((p, i) => list.innerHTML += `<div class="border border-slate-200 rounded p-3 flex justify-between items-center bg-slate-50"><span class="font-medium text-slate-700 text-xs"><i class="fa-solid fa-user text-slate-400 mr-2"></i> ${p}</span><button onclick="app.removePersonnel(${i})" class="text-slate-400 hover:text-rose-500"><i class="fa-solid fa-trash"></i></button></div>`);
             },
-
-            addPersonnel() {
-                const name = prompt("ระบุชื่อ-สกุล และตำแหน่ง (เช่น พว.สมหญิง (HN)):");
-                if(name) {
-                    this.state.personnel.push(name);
-                    this.updatePersonnelDropdown();
-                    this.renderPersonnelList();
-                }
-            },
-
-            removePersonnel(idx) {
-                if(confirm('ยืนยันการลบรายชื่อ?')) {
-                    this.state.personnel.splice(idx, 1);
-                    this.updatePersonnelDropdown();
-                    this.renderPersonnelList();
-                }
-            },
+            addPersonnel() { const n = prompt("ระบุชื่อบุคลากรใหม่:"); if(n) { this.state.personnel.push(n); this.updatePersonnelDropdown(); this.renderPersonnelList(); } },
+            removePersonnel(idx) { if(confirm('ต้องการลบรายชื่อนี้ใช่หรือไม่?')) { this.state.personnel.splice(idx, 1); this.updatePersonnelDropdown(); this.renderPersonnelList(); } },
 
             switchPlanTab(tab) {
                 ['daily', 'weekly', 'monthly'].forEach(t => {
