@@ -271,34 +271,34 @@
                                 </div>
                                 <div>
                                     <label class="block text-xs font-medium text-slate-500 mb-1">ยอดผู้ป่วยรวม (ราย)</label>
-                                    <input type="number" min="0" class="w-full border border-slate-300 rounded-lg px-3 py-2 outline-none focus:border-teal-500">
+                                    <input type="number" id="f-patient-total" min="0" value="0" class="w-full border border-slate-300 rounded-lg px-3 py-2 outline-none focus:border-teal-500">
                                 </div>
                             </div>
                             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                                 <div class="bg-slate-50 p-4 rounded-lg border border-slate-100">
                                     <p class="text-[11px] font-bold text-slate-600 mb-2">การใช้อุปกรณ์ช่วยหายใจ (ราย)</p>
                                     <div class="grid grid-cols-3 gap-2">
-                                        <div><label class="block text-[10px] text-slate-500">Ventilator</label><input type="number" min="0" class="w-full border rounded p-1 text-xs"></div>
-                                        <div><label class="block text-[10px] text-slate-500">HFOV</label><input type="number" min="0" class="w-full border rounded p-1 text-xs"></div>
-                                        <div><label class="block text-[10px] text-slate-500">HHHNC</label><input type="number" min="0" class="w-full border rounded p-1 text-xs"></div>
-                                        <div><label class="block text-[10px] text-slate-500">O2</label><input type="number" min="0" class="w-full border rounded p-1 text-xs"></div>
-                                        <div><label class="block text-[10px] text-slate-500">Room air</label><input type="number" min="0" class="w-full border rounded p-1 text-xs"></div>
-                                        <div><label class="block text-[10px] text-slate-500">Home vent</label><input type="number" min="0" class="w-full border rounded p-1 text-xs"></div>
+                                        <div><label class="block text-[10px] text-slate-500">Ventilator</label><input type="number" id="f-ventilator" min="0" value="0" class="w-full border rounded p-1 text-xs"></div>
+                                        <div><label class="block text-[10px] text-slate-500">HFOV</label><input type="number" id="f-hfov" min="0" value="0" class="w-full border rounded p-1 text-xs"></div>
+                                        <div><label class="block text-[10px] text-slate-500">HHHNC</label><input type="number" id="f-hhhnc" min="0" value="0" class="w-full border rounded p-1 text-xs"></div>
+                                        <div><label class="block text-[10px] text-slate-500">O2</label><input type="number" id="f-o2" min="0" value="0" class="w-full border rounded p-1 text-xs"></div>
+                                        <div><label class="block text-[10px] text-slate-500">Room air</label><input type="number" id="f-room-air" min="0" value="0" class="w-full border rounded p-1 text-xs"></div>
+                                        <div><label class="block text-[10px] text-slate-500">Home vent</label><input type="number" id="f-home-vent" min="0" value="0" class="w-full border rounded p-1 text-xs"></div>
                                     </div>
                                 </div>
                                 <div class="bg-slate-50 p-4 rounded-lg border border-slate-100">
                                     <p class="text-[11px] font-bold text-slate-600 mb-2">ประเภทผู้ป่วย & อัตรากำลัง</p>
                                     <div class="grid grid-cols-5 gap-1 mb-3">
-                                        <div><label class="block text-[9px] text-slate-500 truncate">เทา</label><input type="number" min="0" class="w-full border rounded p-1 text-xs bg-slate-200"></div>
-                                        <div><label class="block text-[9px] text-slate-500 truncate">แดงเข้ม</label><input type="number" min="0" class="w-full border rounded p-1 text-xs bg-rose-200"></div>
-                                        <div><label class="block text-[9px] text-slate-500 truncate">แดงอ่อน</label><input type="number" min="0" class="w-full border rounded p-1 text-xs bg-rose-100"></div>
-                                        <div><label class="block text-[9px] text-slate-500 truncate">เหลือง</label><input type="number" min="0" class="w-full border rounded p-1 text-xs bg-amber-100"></div>
-                                        <div><label class="block text-[9px] text-slate-500 truncate">เขียว</label><input type="number" min="0" class="w-full border rounded p-1 text-xs bg-emerald-100"></div>
+                                        <div><label class="block text-[9px] text-slate-500 truncate">เทา</label><input type="number" id="f-patient-gray" min="0" value="0" class="w-full border rounded p-1 text-xs bg-slate-200"></div>
+                                        <div><label class="block text-[9px] text-slate-500 truncate">แดงเข้ม</label><input type="number" id="f-patient-dark-red" min="0" value="0" class="w-full border rounded p-1 text-xs bg-rose-200"></div>
+                                        <div><label class="block text-[9px] text-slate-500 truncate">แดงอ่อน</label><input type="number" id="f-patient-light-red" min="0" value="0" class="w-full border rounded p-1 text-xs bg-rose-100"></div>
+                                        <div><label class="block text-[9px] text-slate-500 truncate">เหลือง</label><input type="number" id="f-patient-yellow" min="0" value="0" class="w-full border rounded p-1 text-xs bg-amber-100"></div>
+                                        <div><label class="block text-[9px] text-slate-500 truncate">เขียว</label><input type="number" id="f-patient-green" min="0" value="0" class="w-full border rounded p-1 text-xs bg-emerald-100"></div>
                                     </div>
                                     <div class="grid grid-cols-3 gap-2 pt-2 border-t border-slate-200">
-                                        <div><label class="block text-[10px] text-slate-500">กำลัง HN</label><input type="number" min="0" class="w-full border rounded p-1 text-xs"></div>
-                                        <div><label class="block text-[10px] text-slate-500">กำลัง RN</label><input type="number" min="0" class="w-full border rounded p-1 text-xs"></div>
-                                        <div><label class="block text-[10px] text-slate-500">กำลัง A/W</label><input type="number" min="0" class="w-full border rounded p-1 text-xs"></div>
+                                        <div><label class="block text-[10px] text-slate-500">กำลัง HN</label><input type="number" id="f-staff-hn" min="0" value="0" class="w-full border rounded p-1 text-xs"></div>
+                                        <div><label class="block text-[10px] text-slate-500">กำลัง RN</label><input type="number" id="f-staff-rn" min="0" value="0" class="w-full border rounded p-1 text-xs"></div>
+                                        <div><label class="block text-[10px] text-slate-500">กำลัง A/W</label><input type="number" id="f-staff-aw" min="0" value="0" class="w-full border rounded p-1 text-xs"></div>
                                     </div>
                                 </div>
                             </div>
@@ -324,7 +324,7 @@
                                 </div>
                                 <div>
                                     <label class="block text-xs font-medium text-slate-700 mb-1">ผู้รับการนิเทศ</label>
-                                    <input type="text" placeholder="ชื่อผู้รับ" class="w-full border border-slate-300 rounded-lg px-3 py-2 outline-none focus:border-teal-500">
+                                    <input type="text" id="f-supervisee" placeholder="ชื่อผู้รับ" class="w-full border border-slate-300 rounded-lg px-3 py-2 outline-none focus:border-teal-500">
                                 </div>
                                 <div>
                                     <label class="block text-xs font-medium text-slate-700 mb-1">ผู้นิเทศ</label>
@@ -334,23 +334,23 @@
                             <div class="space-y-3 bg-white border border-slate-200 rounded-lg p-4">
                                 <div>
                                     <label class="flex items-center text-xs font-bold text-slate-700 mb-1"><span class="w-5 h-5 rounded bg-slate-800 text-white flex items-center justify-center mr-2 text-[10px]">G</span> Goal (เป้าหมาย)</label>
-                                    <textarea rows="1" class="w-full border border-slate-300 rounded px-2 py-1 text-xs outline-none focus:border-teal-500"></textarea>
+                                    <textarea id="f-goal" rows="1" class="w-full border border-slate-300 rounded px-2 py-1 text-xs outline-none focus:border-teal-500"></textarea>
                                 </div>
                                 <div>
                                     <label class="flex items-center text-xs font-bold text-slate-700 mb-1"><span class="w-5 h-5 rounded bg-slate-800 text-white flex items-center justify-center mr-2 text-[10px]">R</span> Reality (สถานการณ์ที่เกิดขึ้น)</label>
-                                    <textarea rows="2" class="w-full border border-slate-300 rounded px-2 py-1 text-xs outline-none focus:border-teal-500"></textarea>
+                                    <textarea id="f-reality" rows="2" class="w-full border border-slate-300 rounded px-2 py-1 text-xs outline-none focus:border-teal-500"></textarea>
                                 </div>
                                 <div>
                                     <label class="flex items-center text-xs font-bold text-slate-700 mb-1"><span class="w-5 h-5 rounded bg-slate-800 text-white flex items-center justify-center mr-2 text-[10px]">O</span> Option (ทางเลือกในการแก้ปัญหา)</label>
-                                    <textarea rows="2" class="w-full border border-slate-300 rounded px-2 py-1 text-xs outline-none focus:border-teal-500"></textarea>
+                                    <textarea id="f-option" rows="2" class="w-full border border-slate-300 rounded px-2 py-1 text-xs outline-none focus:border-teal-500"></textarea>
                                 </div>
                                 <div>
                                     <label class="flex items-center text-xs font-bold text-slate-700 mb-1"><span class="w-5 h-5 rounded bg-slate-800 text-white flex items-center justify-center mr-2 text-[10px]">W</span> What next (จะทำอะไรต่อไป)</label>
-                                    <textarea rows="2" class="w-full border border-slate-300 rounded px-2 py-1 text-xs outline-none focus:border-teal-500"></textarea>
+                                    <textarea id="f-what-next" rows="2" class="w-full border border-slate-300 rounded px-2 py-1 text-xs outline-none focus:border-teal-500"></textarea>
                                 </div>
                                 <div>
                                     <label class="flex items-center text-xs font-bold text-slate-700 mb-1"><span class="w-5 h-5 rounded bg-slate-800 text-white flex items-center justify-center mr-2 text-[10px]">S</span> Study (เรียนรู้สิ่งที่เกิดขึ้นอย่างไร)</label>
-                                    <textarea rows="1" class="w-full border border-slate-300 rounded px-2 py-1 text-xs outline-none focus:border-teal-500"></textarea>
+                                    <textarea id="f-study" rows="1" class="w-full border border-slate-300 rounded px-2 py-1 text-xs outline-none focus:border-teal-500"></textarea>
                                 </div>
                             </div>
                         </div>
@@ -501,7 +501,9 @@
 
     <script>
         const app = {
-            SCRIPT_URL: 'YOUR_GOOGLE_SCRIPT_WEB_APP_URL_HERE',
+            SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbzQ1_4VjlaNopagdQ2N6C613Mm7FiaBnkyWb7eiyXZLkQ2fIgYKMrRL-AUJG5yFN11PvA/exec',
+            STORAGE_KEY: 'nursing-dashboard-ped1-records-v1',
+            PERSONNEL_STORAGE_KEY: 'nursing-dashboard-ped1-personnel-v1',
 
             state: {
                 view: 'dashboard',
@@ -511,17 +513,105 @@
                     'พว.ใจดี มีสุข (SN)', 
                     'พว.ขยัน อดทน (RN)'
                 ],
-                mockData: [],
+                records: [],
                 charts: {}
             },
 
-            init() {
+            async init() {
                 this.checkLogin(); // ตรวจสอบสถานะการ Login
-                this.generateMockData();
+                this.loadLocalData();
                 this.updatePersonnelDropdown();
                 this.renderPersonnelList();
                 this.renderPlans();
+                document.getElementById('f-date').value = new Date().toISOString().split('T')[0];
                 this.navigate('dashboard');
+                await this.loadRemoteData();
+            },
+
+            loadLocalData() {
+                try {
+                    const savedRecords = JSON.parse(localStorage.getItem(this.STORAGE_KEY) || '[]');
+                    const savedPersonnel = JSON.parse(localStorage.getItem(this.PERSONNEL_STORAGE_KEY) || 'null');
+                    this.state.records = Array.isArray(savedRecords) ? savedRecords : [];
+                    if (Array.isArray(savedPersonnel) && savedPersonnel.length > 0) {
+                        this.state.personnel = savedPersonnel;
+                    }
+                } catch (error) {
+                    console.warn('Cannot read local data:', error);
+                    this.state.records = [];
+                }
+            },
+
+            saveLocalData() {
+                try {
+                    localStorage.setItem(this.STORAGE_KEY, JSON.stringify(this.state.records));
+                    localStorage.setItem(this.PERSONNEL_STORAGE_KEY, JSON.stringify(this.state.personnel));
+                    return true;
+                } catch (error) {
+                    console.error('Cannot save a local backup:', error);
+                    return false;
+                }
+            },
+
+            async loadRemoteData() {
+                if (!this.isBackendConfigured()) return;
+
+                try {
+                    const response = await fetch(`${this.SCRIPT_URL}?action=list&_=${Date.now()}`, {
+                        method: 'GET',
+                        redirect: 'follow'
+                    });
+                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+                    const payload = await response.json();
+                    const remoteRecords = Array.isArray(payload) ? payload : payload.records;
+                    if (!Array.isArray(remoteRecords)) throw new Error('Invalid response format');
+
+                    const byId = new Map(this.state.records.map(record => [String(record.id), record]));
+                    remoteRecords.forEach(record => byId.set(String(record.id), { ...record, _syncStatus: 'synced' }));
+                    this.state.records = Array.from(byId.values())
+                        .sort((a, b) => new Date(b.date) - new Date(a.date));
+                    this.saveLocalData();
+                    await this.syncPendingRecords();
+                    this.renderDashboard();
+                    if (this.state.view === 'reports') this.renderReportsTable();
+                } catch (error) {
+                    console.warn('Cannot load Google Sheets data; using local copy:', error);
+                }
+            },
+
+            isBackendConfigured() {
+                return /^https:\/\/script\.google\.com\/macros\/s\/[^/]+\/exec$/.test(this.SCRIPT_URL);
+            },
+
+            async sendRecord(record) {
+                if (!this.isBackendConfigured()) throw new Error('Google Apps Script URL is not configured');
+
+                const response = await fetch(this.SCRIPT_URL, {
+                    method: 'POST',
+                    body: JSON.stringify(record),
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    redirect: 'follow'
+                });
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+                const result = await response.json().catch(() => ({ success: true }));
+                if (result.success === false) throw new Error(result.error || 'Google Sheets rejected the record');
+                return result;
+            },
+
+            async syncPendingRecords() {
+                const pendingRecords = this.state.records.filter(record => record._syncStatus === 'pending');
+                for (const record of pendingRecords) {
+                    try {
+                        await this.sendRecord(record);
+                        record._syncStatus = 'synced';
+                    } catch (error) {
+                        console.warn(`Cannot sync record ${record.id}:`, error);
+                        break;
+                    }
+                }
+                this.saveLocalData();
             },
 
             // --- ระบบ Login ---
@@ -615,29 +705,28 @@
                 if(viewId === 'reports') this.renderReportsTable();
             },
 
-            generateMockData() {
-                const wards = ['SCH-ICU2', 'SCH-ICU3', 'PCICU'];
-                const cats = ['Environment', 'Flow', 'Infection', 'Risk', 'Equipment'];
-                const topics = ['Sepsis', 'Hand hygiene', 'Ventilator', 'ขยะ', 'HRMS', 'Pneumonia'];
-                
-                for(let i=0; i<150; i++) {
-                    const isDone = Math.random() > 0.25; 
-                    this.state.mockData.push({
-                        id: i,
-                        date: `2025-10-${String(Math.floor(Math.random()*28)+1).padStart(2,'0')}`,
-                        ward: wards[Math.floor(Math.random()*wards.length)],
-                        cat: cats[Math.floor(Math.random()*cats.length)],
-                        topic: topics[Math.floor(Math.random()*topics.length)],
-                        supervisor: this.state.personnel[Math.floor(Math.random()*this.state.personnel.length)],
-                        status: isDone ? 'done' : 'pending'
-                    });
-                }
-                this.state.mockData.sort((a,b) => new Date(b.date) - new Date(a.date));
+            numberValue(id) {
+                return Number(document.getElementById(id).value) || 0;
+            },
+
+            escapeHTML(value) {
+                return String(value ?? '')
+                    .replaceAll('&', '&amp;')
+                    .replaceAll('<', '&lt;')
+                    .replaceAll('>', '&gt;')
+                    .replaceAll('"', '&quot;')
+                    .replaceAll("'", '&#039;');
+            },
+
+            weekOfMonth(record) {
+                if (record.week) return Math.min(5, Math.max(1, Number(record.week)));
+                const day = Number(String(record.date || '').split('-')[2]) || 1;
+                return Math.min(5, Math.ceil(day / 7));
             },
 
             renderDashboard() {
                 const wardFilter = document.getElementById('dash-ward-filter').value;
-                let filteredData = this.state.mockData;
+                let filteredData = this.state.records;
                 
                 if(wardFilter !== 'all') {
                     filteredData = filteredData.filter(x => x.ward === wardFilter);
@@ -669,10 +758,9 @@
                 const colors = ['#10b981', '#0ea5e9', '#f43f5e', '#f59e0b', '#8b5cf6'];
                 
                 const datasets = cats.map((cat, i) => {
-                    const catTotal = filteredData.filter(x => x.cat === cat).length;
                     return {
                         label: cat,
-                        data: [Math.floor(catTotal*0.2), Math.floor(catTotal*0.3), Math.floor(catTotal*0.2), catTotal - Math.floor(catTotal*0.2)*2 - Math.floor(catTotal*0.3)],
+                        data: [1, 2, 3, 4, 5].map(week => filteredData.filter(record => record.cat === cat && this.weekOfMonth(record) === week).length),
                         borderColor: colors[i],
                         backgroundColor: colors[i],
                         tension: 0.3,
@@ -682,7 +770,7 @@
 
                 this.state.charts.trend = new Chart(ctxTrend, {
                     type: 'line',
-                    data: { labels: ['สัปดาห์ 1', 'สัปดาห์ 2', 'สัปดาห์ 3', 'สัปดาห์ 4'], datasets: datasets },
+                    data: { labels: ['สัปดาห์ 1', 'สัปดาห์ 2', 'สัปดาห์ 3', 'สัปดาห์ 4', 'สัปดาห์ 5'], datasets: datasets },
                     options: { 
                         responsive: true, maintainAspectRatio: false,
                         plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: {size: 10} } } },
@@ -729,41 +817,66 @@
                 submitBtn.disabled = true;
 
                 const newEntry = {
-                    id: Date.now(),
+                    id: `${Date.now()}-${crypto.getRandomValues(new Uint32Array(1))[0]}`,
+                    createdAt: new Date().toISOString(),
                     date: document.getElementById('f-date').value,
+                    week: document.getElementById('f-week').value,
                     ward: document.getElementById('f-ward').value,
+                    patientTotal: this.numberValue('f-patient-total'),
+                    ventilator: this.numberValue('f-ventilator'),
+                    hfov: this.numberValue('f-hfov'),
+                    hhhnc: this.numberValue('f-hhhnc'),
+                    o2: this.numberValue('f-o2'),
+                    roomAir: this.numberValue('f-room-air'),
+                    homeVent: this.numberValue('f-home-vent'),
+                    patientGray: this.numberValue('f-patient-gray'),
+                    patientDarkRed: this.numberValue('f-patient-dark-red'),
+                    patientLightRed: this.numberValue('f-patient-light-red'),
+                    patientYellow: this.numberValue('f-patient-yellow'),
+                    patientGreen: this.numberValue('f-patient-green'),
+                    staffHN: this.numberValue('f-staff-hn'),
+                    staffRN: this.numberValue('f-staff-rn'),
+                    staffAW: this.numberValue('f-staff-aw'),
                     cat: document.getElementById('f-cat').value,
-                    topic: document.getElementById('f-topic').value,
+                    topic: document.getElementById('f-topic').value.trim(),
+                    supervisee: document.getElementById('f-supervisee').value.trim(),
                     supervisor: document.getElementById('f-supervisor').value,
-                    status: document.querySelector('input[name="f_status"]:checked').value
+                    goal: document.getElementById('f-goal').value.trim(),
+                    reality: document.getElementById('f-reality').value.trim(),
+                    option: document.getElementById('f-option').value.trim(),
+                    whatNext: document.getElementById('f-what-next').value.trim(),
+                    study: document.getElementById('f-study').value.trim(),
+                    status: document.querySelector('input[name="f_status"]:checked').value,
+                    _syncStatus: 'pending'
                 };
 
-                try {
-                    if (this.SCRIPT_URL && this.SCRIPT_URL !== 'https://script.google.com/macros/s/AKfycbzQ1_4VjlaNopagdQ2N6C613Mm7FiaBnkyWb7eiyXZLkQ2fIgYKMrRL-AUJG5yFN11PvA/exec') {
-                        await fetch(this.SCRIPT_URL, {
-                            method: 'POST',
-                            body: JSON.stringify(newEntry),
-                            headers: {
-                                'Content-Type': 'text/plain;charset=utf-8',
-                            }
-                        });
-                    }
+                this.state.records.unshift(newEntry);
+                const savedLocally = this.saveLocalData();
 
-                    this.state.mockData.unshift(newEntry);
-                    
+                try {
+                    await this.sendRecord(newEntry);
+                    newEntry._syncStatus = 'synced';
+                    this.saveLocalData();
+
                     if (confirm('บันทึกข้อมูลสำเร็จ!\n\n(ข้อมูลถูกส่งเข้า Google Sheets เรียบร้อย)\nคุณต้องการพิมพ์แบบฟอร์มนี้เก็บไว้เป็นหลักฐานหรือไม่?\n- กด OK เพื่อพิมพ์\n- กด Cancel เพื่อกลับหน้า Dashboard')) {
                         window.print();
                         setTimeout(() => {
                             e.target.reset();
+                            document.getElementById('f-date').value = new Date().toISOString().split('T')[0];
                             this.navigate('dashboard');
                         }, 1000);
                     } else {
                         e.target.reset();
+                        document.getElementById('f-date').value = new Date().toISOString().split('T')[0];
                         this.navigate('dashboard');
                     }
                 } catch (error) {
                     console.error("Error saving data:", error);
-                    alert("เกิดข้อผิดพลาดในการบันทึกข้อมูล กรุณาตรวจสอบอินเทอร์เน็ตและลองใหม่อีกครั้ง");
+                    const message = savedLocally
+                        ? "บันทึกสำรองไว้ในเครื่องนี้แล้ว แต่ยังส่งเข้า Google Sheets ไม่สำเร็จ\n\nระบบจะลองส่งอีกครั้งเมื่อเปิดหน้านี้ภายหลัง กรุณาตรวจสอบการ Deploy ของ Google Apps Script และอินเทอร์เน็ต"
+                        : "ยังบันทึกข้อมูลไม่ได้ทั้งในเครื่องและ Google Sheets\n\nกรุณาอย่าปิดหน้านี้ และติดต่อผู้ดูแลระบบ";
+                    alert(message);
+                    this.navigate('reports');
                 } finally {
                     submitBtn.innerHTML = originalBtnHTML;
                     submitBtn.disabled = false;
@@ -775,21 +888,26 @@
                 const status = document.getElementById('r-status').value;
                 const tbody = document.getElementById('reports-tbody');
                 
-                let filtered = this.state.mockData;
+                let filtered = this.state.records;
                 if(ward !== 'all') filtered = filtered.filter(x => x.ward === ward);
                 if(status !== 'all') filtered = filtered.filter(x => x.status === status);
 
                 tbody.innerHTML = '';
+                if (filtered.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" class="p-8 text-center text-slate-400">ยังไม่มีข้อมูลที่บันทึก</td></tr>';
+                    return;
+                }
                 filtered.slice(0, 50).forEach(r => {
                     const st = r.status === 'done' ? '<span class="text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">แก้ไขแล้ว</span>' : '<span class="text-rose-600 bg-rose-50 px-2 py-0.5 rounded border border-rose-200">รอติดตาม</span>';
+                    const syncBadge = r._syncStatus === 'pending' ? '<span class="ml-1 text-amber-600 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">รอส่งขึ้นระบบ</span>' : '';
                     tbody.innerHTML += `
                         <tr class="hover:bg-slate-50">
-                            <td class="p-3 text-slate-500">${r.date}</td>
-                            <td class="p-3 font-medium">${r.ward}</td>
-                            <td class="p-3 text-sky-600">${r.cat}</td>
-                            <td class="p-3 truncate max-w-[150px]">${r.topic}</td>
-                            <td class="p-3">${r.supervisor}</td>
-                            <td class="p-3 text-center">${st}</td>
+                            <td class="p-3 text-slate-500">${this.escapeHTML(r.date)}</td>
+                            <td class="p-3 font-medium">${this.escapeHTML(r.ward)}</td>
+                            <td class="p-3 text-sky-600">${this.escapeHTML(r.cat)}</td>
+                            <td class="p-3 truncate max-w-[150px]">${this.escapeHTML(r.topic)}</td>
+                            <td class="p-3">${this.escapeHTML(r.supervisor)}</td>
+                            <td class="p-3 text-center">${st}${syncBadge}</td>
                         </tr>
                     `;
                 });
@@ -799,7 +917,7 @@
                 const ward = document.getElementById('r-ward').value;
                 const status = document.getElementById('r-status').value;
                 
-                let filtered = this.state.mockData;
+                let filtered = this.state.records;
                 if(ward !== 'all') filtered = filtered.filter(x => x.ward === ward);
                 if(status !== 'all') filtered = filtered.filter(x => x.status === status);
 
@@ -811,13 +929,19 @@
                 let csvContent = "\uFEFF"; 
                 csvContent += "วันที่,หอผู้ป่วย,หมวดหมู่ (E-FIRES),เรื่องที่นิเทศ,ผู้นิเทศ,สถานะการติดตาม\n";
 
+                const csvCell = value => {
+                    let safeValue = String(value ?? '');
+                    if (/^[=+\-@]/.test(safeValue)) safeValue = `'${safeValue}`;
+                    return `"${safeValue.replaceAll('"', '""')}"`;
+                };
+
                 filtered.forEach(row => {
-                    const date = `"${row.date}"`;
-                    const w = `"${row.ward}"`;
-                    const cat = `"${row.cat}"`;
-                    const topic = `"${row.topic}"`;
-                    const supervisor = `"${row.supervisor}"`;
-                    const st = `"${row.status === 'done' ? 'แก้ไขแล้วเสร็จ' : 'รอติดตามผล'}"`;
+                    const date = csvCell(row.date);
+                    const w = csvCell(row.ward);
+                    const cat = csvCell(row.cat);
+                    const topic = csvCell(row.topic);
+                    const supervisor = csvCell(row.supervisor);
+                    const st = csvCell(row.status === 'done' ? 'แก้ไขแล้วเสร็จ' : 'รอติดตามผล');
                     
                     csvContent += [date, w, cat, topic, supervisor, st].join(",") + "\n";
                 });
@@ -830,13 +954,15 @@
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
+                URL.revokeObjectURL(url);
             },
 
             updatePersonnelDropdown() {
                 const sel = document.getElementById('f-supervisor');
                 sel.innerHTML = '<option value="" disabled selected>-- เลือกผู้นิเทศ --</option>';
                 this.state.personnel.forEach(p => {
-                    sel.innerHTML += `<option value="${p}">${p}</option>`;
+                    const safeName = this.escapeHTML(p);
+                    sel.innerHTML += `<option value="${safeName}">${safeName}</option>`;
                 });
             },
 
@@ -844,9 +970,10 @@
                 const list = document.getElementById('personnel-list');
                 list.innerHTML = '';
                 this.state.personnel.forEach((p, i) => {
+                    const safeName = this.escapeHTML(p);
                     list.innerHTML += `
                         <div class="border border-slate-200 rounded p-3 flex justify-between items-center bg-slate-50">
-                            <span class="font-medium text-slate-700 text-xs"><i class="fa-solid fa-user text-slate-400 mr-2"></i> ${p}</span>
+                            <span class="font-medium text-slate-700 text-xs"><i class="fa-solid fa-user text-slate-400 mr-2"></i> ${safeName}</span>
                             <button onclick="app.removePersonnel(${i})" class="text-slate-400 hover:text-rose-500"><i class="fa-solid fa-trash"></i></button>
                         </div>
                     `;
@@ -856,7 +983,8 @@
             addPersonnel() {
                 const name = prompt("ระบุชื่อ-สกุล และตำแหน่ง (เช่น พว.สมหญิง (HN)):");
                 if(name) {
-                    this.state.personnel.push(name);
+                    this.state.personnel.push(name.trim());
+                    this.saveLocalData();
                     this.updatePersonnelDropdown();
                     this.renderPersonnelList();
                 }
@@ -865,6 +993,7 @@
             removePersonnel(idx) {
                 if(confirm('ยืนยันการลบรายชื่อ?')) {
                     this.state.personnel.splice(idx, 1);
+                    this.saveLocalData();
                     this.updatePersonnelDropdown();
                     this.renderPersonnelList();
                 }
